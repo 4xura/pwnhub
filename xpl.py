@@ -53,7 +53,7 @@ def leak(addr: int) -> None:
 def itoa(a: int) -> bytes:
     return str(a).encode()
 
-# Rop
+# Rop 
 # ------------------------------------------------------------------------
 class ROPGadgets:
     def __init__(self, libc: ELF, libc_base: int): 
@@ -74,7 +74,7 @@ class ROPGadgets:
     def __getitem__(self, k: str) -> int:
         return self.ggs.get(k)
 
-# Unguard pointers
+# Protected Pointers
 # ------------------------------------------------------------------------
 # - Mangle/demangle glibc pointers with per-process TCB guard & bit rotation
 class PointerGuard:
