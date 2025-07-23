@@ -1,3 +1,26 @@
+/**
+ * Title : Qemu PCI devices Pwn Exploit
+ * Author: Axura (@4xura) - https://4xura.com
+ *
+ * Description:
+ * ------------
+ * Exploit script for a PCI device inside a QEMU virtual machine.
+ * Provides MMIO and PMIO access primitives for interacting with a memory-mapped
+ * or port-mapped emulated device (e.g., `resource0`) exposed by QEMU.
+ *
+ * TODO:
+ * -----
+ * - Extend IO primitives 
+ *
+ * Usage:
+ * ------
+ * gcc -o xpl -g -O0 -static xpl.c
+ *
+ * Notes:
+ * ------
+ * Provided for educational use. Use responsibly.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>

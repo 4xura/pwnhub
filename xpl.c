@@ -1,3 +1,26 @@
+/**
+ * Title : Linux Kernel Pwn Exploit
+ * Author: Axura (@4xura) - https://4xura.com
+ *
+ * Description:
+ * ------------
+ * Entry point for a modular Linux kernel exploitation framework.
+ * Move libs here from the framework for one-script exploit if needed.
+ *
+ * TODO:
+ * -----
+ * - Kernel heap exploit modules
+ * - IO modules
+ *
+ * Usage:
+ * ------
+ * Refer to the Makefile ($ make help)
+ *
+ * Notes:
+ * ------
+ * Provided for educational use. Use responsibly.
+ */
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +46,9 @@
 int main(void)
 {
     int fd = open_dev(DEVICE_PATH, O_RDWR);
+
+
+
 
 
     close(fd);
