@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Title : Linux Userland Pwn Exploit
-# Author: Axura (@5xura) - https://4xura.com
+# Author: Axura (@4xura) - https://4xura.com
 #
 # Description:
 # ------------
@@ -96,7 +96,7 @@ class PointerGuard:
     def demangle(self, mangled: int) -> int:
         return self.ror(mangled) ^ self.guard
 
-# - Encrypt/decrypt fd pointer in single link list (e.g. tcache, fast)
+# - Encrypt/decrypt fd pointer in single link list (e.g. tcache, fast bins)
 class SafeLinking:
     def __init__(self, heap_base: int):
         self.heap_base = heap_base
