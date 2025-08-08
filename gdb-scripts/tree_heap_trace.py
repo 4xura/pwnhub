@@ -34,26 +34,7 @@ OP_HDR = re.compile(r'^========= \[([A-Z]+)\]')
 # - Capture up to the first " ("  or the end of line, discarding args
 FRAME  = re.compile(r'^#\d+\s+\S+\s+in\s+([^( \t]+)')
 
-# Parse log
-# ------------------------------------------------------------------------
-# Yield (operation, frame_list) blocks
-def events(lines):
-    """Yield (operation, [frames…]) tuples in the order they appear."""
-    op, frames = None, []
-    for ln in lines:
-        m = OP_HDR.match(ln)
-        if m:
-            if op:                                 # flush previous block
-                yield op, frames
-            op, frames = m.group(1), []
-            continue
-        m = FRAME.match(ln)
-        if m:
-            frames.append(m.group(1).rstrip())
-    if op:
-        yield op, frames
-
-# Tree model
+# Helpers
 # ------------------------------------------------------------------------
 class Node:
     __slots__ = ('name', 'count', 'kids')
@@ -62,54 +43,45 @@ class Node:
         self.count = 0
         self.kids  = collections.OrderedDict()
 
-def add_stack(root, stack):
-    """Insert one root→leaf stack into the tree, bumping counts."""
+def add_stack(root, stack):                  # stack == root→leaf
     node = root
     node.count += 1
-    for frame in stack:
-        if frame not in node.kids:
-            node.kids[frame] = Node(frame)
-        node               = node.kids[frame]
-        node.count        += 1
+    for f in stack:
+        node = node.kids.setdefault(f, Node(f))
+        node.count += 1
 
 def print_tree(node, indent=''):
-    kids = sorted(node.kids.values(), key=lambda k: -k.count)  # hot first
-    for i, kid in enumerate(kids):
-        branch = '└─ ' if i == len(kids) - 1 else '├─ '
-        print(indent + branch + '{} [{}]'.format(kid.name, kid.count))
-        next_indent = indent + ('   ' if i == len(kids) - 1 else '│  ')
-        print_tree(kid, next_indent)
+    for i, (name, kid) in enumerate(node.kids.items()):
+        branch = '└─ ' if i == len(node.kids)-1 else '├─ '
+        print(indent + branch + '{} [{}]'.format(name, kid.count))
+        print_tree(kid, indent + ('   ' if i == len(node.kids)-1 else '│  '))
 
-def trim_stack(frames):
-    """Return frames in caller→callee order, pruned of obvious junk."""
-    frames = list(reversed(frames))           # #N … #0  →  root→leaf
-
-    # keep only from the first 'main' downward, if present
-    try:
-        frames = frames[frames.index('main'):]
-    except ValueError:
-        pass
-
-    # cut when a frame repeats within the same trace (loop protection)
-    seen, out = set(), []
-    for fr in frames:
-        if fr in seen:
-            break
-        seen.add(fr)
-        out.append(fr)
-    return out if out else ['«empty-stack»']
-
-# Build tree
+# Parse & Build
 # ------------------------------------------------------------------------
 roots = collections.defaultdict(lambda: Node('ROOT'))
 
-with open(LOG, 'r', errors='replace') as fp:
-    for op, raw in events(fp):
-        stack = trim_stack(raw)
-        if not stack or stack[0] == 'main':           # “normal” stacks
-            add_stack(roots[op], stack)
-        else:                                         # pre-main activity
-            add_stack(roots['pre-main-' + op], stack)
+with open(LOG) as fp:
+    op, frames = None, []
+    for ln in fp:
+        hdr = OP_HDR.match(ln)
+        if hdr:                                            # banner line
+            if op and frames:
+                # ---------- finish previous event -------------------------#
+                # trim everything *above* main() if main is present
+                if 'main' in frames:
+                    frames = frames[:frames.index('main')+1]
+                add_stack(roots[op], reversed(frames))     # root→leaf
+            op, frames = hdr.group(1), []
+            continue
+        fr = FRAME.match(ln)
+        if fr:
+            frames.append(fr.group(1).rstrip())
+
+    # last event in file
+    if op and frames:
+        if 'main' in frames:
+            frames = frames[:frames.index('main')+1]
+        add_stack(roots[op], reversed(frames))
 
 # Output
 # ------------------------------------------------------------------------
