@@ -97,7 +97,7 @@ with open(LOG) as fp:
         except ValueError:
             pass                                 # stacks that run before main
 
-        add_stack(roots[op], trimmed)            # root→leaf
+        add_stack(roots[op], root_first)            # root→leaf
 
 # Output
 # ------------------------------------------------------------------------
