@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Title		: Build A Calltree from A Heap Trace Log
-# Date		: 2025-08-08
-# Author	: Axura (@4xura) - https://4xura.com
-# Version	: Python 3.5+
+# Title     : Build a call-tree from a GDB heap-trace log
+# Date      : 2025-08-08
+# Author    : Axura (@4xura) - https://4xura.com
+# Version   : Python 3.5+
 #
 # Description:
 # ------------
 # Build a per-operation call tree from a GDB heap_trace.log produced by
-# heap_trace.gdb
+#  • heap_trace.gdb    
+#    https://github.com/4xura/pwnhub/blob/main/gdb-scripts/heap_trace.gdb
+# 
+#  • Groups by allocator op  (MALLOC / CALLOC / REALLOC / FREE)
+#  • Drops everything above main()   (_start, __libc_start_main …)
+#  • Collapses identical call-paths and shows hit-counts
 #
 # TODO:
 # -----
@@ -23,24 +28,33 @@
 from __future__ import print_function
 import re, sys, collections, pathlib                 
 
-LOG = sys.argv[1] if len(sys.argv) == 2 else None
-if not LOG or not pathlib.Path(LOG).is_file():
+# 1. Check input
+# ──────────────────────────────────────────────────────────────────────
+if len(sys.argv) != 2 or not pathlib.Path(sys.argv[1]).is_file():
     sys.exit("usage: tree_heap_trace.py <heap_trace.log>")
+LOG = sys.argv[1]
 
-# Regex
-# ------------------------------------------------------------------------
-# - Extract frames from MALLOC, CALLOC … banners, keeping full tail
-OP_HDR = re.compile(r'^========= \[([A-Z]+)\]')
-# - Capture up to the first " ("  or the end of line, discarding args
-FRAME  = re.compile(r'^#\d+\s+\S+\s+in\s+([^( \t]+)')
+# 2. Regex helpers
+# ──────────────────────────────────────────────────────────────────────
+OP_HDR = re.compile(r'^========= \[([A-Z]+)\]')          # allocator banner
+"""
+one line of a back-trace:
+    #0  0x1234abcd in foo () at …      ← has “in”
+    #2  bar (arg=42) at …              ← no  “in”
+"""
+FRAME  = re.compile(
+    r'^#\d+\s+(?:\S+\s+in\s+)?'        # optional “addr  in ”
+    r'([^( \t]+)'                      # function name   (capture-group 1)
+)
 
-# Generator
-# ------------------------------------------------------------------------
+# 3. Generator      heap-ops  →  [frames …]
+# ──────────────────────────────────────────────────────────────────────
+# heap-ops  →  [frames …]
 def events(lines):
     op, frames = None, []
     for ln in lines:
         m = OP_HDR.match(ln)
-        if m:                                            # new operation header
+        if m:                                       # new allocator section
             if op is not None:
                 yield op, frames
             op, frames = m.group(1), []
@@ -52,60 +66,52 @@ def events(lines):
     if op is not None:
         yield op, frames
 
-# Tree model
-# ------------------------------------------------------------------------
+# 4. Tree model
+# ──────────────────────────────────────────────────────────────────────
 class Node(object):
     __slots__ = ('name', 'count', 'kids')
     def __init__(self, name):
         self.name  = name
         self.count = 0
-        self.kids  = collections.OrderedDict()   # preserves first-seen order
-
+        self.kids  = collections.OrderedDict()      # preserve first-seen order
 
 def add_stack(root, stack):
-    """
-    Insert one call-stack (root ➜ leaf order) under *root*,
-    incrementing counters along the way.
-    """
+    """insert one call-path (root→leaf) and bump counters"""
     node = root
     node.count += 1
     for frame in stack:
-        if frame not in node.kids:
-            node.kids[frame] = Node(frame)
-        node = node.kids[frame]
+        node = node.kids.setdefault(frame, Node(frame))
         node.count += 1
 
-
 def print_tree(node, indent=''):
-    """
-    Pretty-print the tree (depth-first).
-    The artificial ROOT is never printed, only its children.
-    """
-    last_idx = len(node.kids) - 1
+    """depth-first pretty-printer (skips the artificial ROOT)"""
+    last = len(node.kids) - 1
     for i, (name, kid) in enumerate(node.kids.items()):
-        branch = '└─ ' if i == last_idx else '├─ '
+        branch = '└─ ' if i == last else '├─ '
         print(indent + branch + '{} [{}]'.format(name, kid.count))
-        next_indent = indent + ('   ' if i == last_idx else '│  ')
-        print_tree(kid, next_indent)
+        print_tree(kid, indent + ('   ' if i == last else '│  '))
 
-# Parse & Build
-# ------------------------------------------------------------------------
+# 5. Build tree
+# ──────────────────────────────────────────────────────────────────────
+# one tree per allocator op
 roots = collections.defaultdict(lambda: Node('ROOT'))
 
-with open(LOG, 'r', encoding='utf-8', errors='replace') as fp:
+with open(LOG, encoding='utf-8', errors='replace') as fp:
     for op, frames in events(fp):
-        # Keep only the segment from main() (inclusive) down to #0
-        if 'main' not in frames:
-            continue                      # ignore pre-main noise
-        cut = frames.index('main') + 1    # frames[cut:] are above main()
-        pruned = frames[:cut]             # #0 … main
-        add_stack(roots[op], reversed(pruned))   # store as root→leaf
 
-# Output
-# ------------------------------------------------------------------------
+        if 'main' not in frames:        # ignore pre-main loader noise
+            continue
+
+        # - keep   #0 … main   (drop __libc_start_main / _start / etc.)
+        keep = frames[: frames.index('main') + 1]
+
+        # - store as  main → … → leaf
+        add_stack(roots[op], reversed(keep))
+
+# 6. Output
+# ──────────────────────────────────────────────────────────────────────
 for op in sorted(roots):
     root = roots[op]
     print('\n{}   ({} calls)'.format(op, root.count))
     print_tree(root)
-
 
