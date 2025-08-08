@@ -1,9 +1,11 @@
 # heap-trace.gdb
 
+set pagination off
 set logging file heap_trace.log
 set logging redirect on
 set logging on
-set pagination off
+
+printf "=== HEAP TRACE GDB SCRIPT LOADED ===\n"
 
 # Breakpoints
 break malloc
@@ -11,40 +13,61 @@ break calloc
 break realloc
 break free
 
-# malloc
+# Use this in commands instead of bt: fix old-version gdb (≤ 10.1) for “ui-out” bug
+define btlog
+    python import gdb, sys; sys.stderr.write(gdb.execute("bt", to_string=True))
+end
+
+# ---------- [ malloc ] ----------
 commands 1
-  silent
-  printf "[MALLOC] size = %zu\n", $rdi
-  backtrace 
-  finish
-  printf "[MALLOC] returned = %p\n", $rax
-  continue
+	silent
+ 	printf "\n========= [MALLOC] =========\n"
+ 	printf ">>> malloc(0x%lx)\n", (unsigned long)$rdi
+	printf "Request size     : %lu\n", (unsigned long)$rdi
+ 	btlog
+ 	continue
 end
 
-# calloc
+# ---------- [ calloc ] ----------
 commands 2
-  silent
-  printf "[CALLOC] nmemb = %zu, size = %zu\n", $rdi, $rsi
-  backtrace 
-  finish
-  printf "[CALLOC] returned = %p\n", $rax
-  continue
+  	silent
+  	printf "\n========= [CALLOC] =========\n"
+  	printf ">>> calloc(%lu, 0x%lx)\n", (unsigned long)$rdi, (unsigned long)$rsi
+  	printf "Count  : %lu\n", (unsigned long)$rdi
+  	printf "Size   : %lu\n", (unsigned long)$rsi
+ 	btlog
+  	continue
 end
 
-# realloc
+# ---------- [ realloc ] ----------
 commands 3
-  silent
-  printf "[REALLOC] ptr = %p, size = %zu\n", $rdi, $rsi
-  backtrace 
-  finish
-  printf "[REALLOC] returned = %p\n", $rax
-  continue
+  	silent
+  	printf "\n========= [REALLOC] =========\n"
+  	printf ">>> realloc(%p, 0x%lx)\n", (void*)$rdi, (unsigned long)$rsi
+  	printf "Old ptr : %p\n", (void*)$rdi
+  	printf "New size: %lu\n", (unsigned long)$rsi
+  	btlog
+  	continue
 end
 
-# free
+# ---------- [ free ] ----------
 commands 4
-  silent
-  printf "[FREE] ptr = %p\n", $rdi
-  backtrace 
-  continue
+  	silent
+  	printf "\n========= [FREE] =========\n"
+  	printf ">>> free(%p)\n", (void*)$rdi
+  	printf "Freed pointer : %p\n", (void*)$rdi
+  	btlog
+  	continue
 end
+
+# ---------- [ signal handling + execution ] ----------
+handle SIGABRT print stop
+handle SIGSEGV print stop
+
+run
+
+# Crash / final state dump
+printf "\n========= [CRASH INFO] =========\n"
+bt
+info registers
+quit
