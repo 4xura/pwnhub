@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Title     : Build A Calltree from A Heap Trace Log
-# Date      : 2025-08-08
-# Author    : Axura (@4xura) - https://4xura.com
-# Version   : Python 3.5+
+# Title		: Build A Calltree from A Heap Trace Log
+# Date		: 2025-08-08
+# Author	: Axura (@4xura) - https://4xura.com
+# Version	: Python 3.5+
 #
 # Description:
 # ------------
@@ -21,17 +21,18 @@
 #
 
 from __future__ import print_function
-import re, sys, collections, pathlib, itertools
+import re, sys, collections, pathlib                 # itertools was unused
 
 LOG = sys.argv[1] if len(sys.argv) == 2 else None
 if not LOG or not pathlib.Path(LOG).is_file():
-    sys.exit("usage: heap_calltree.py <heap_trace.log>")
+    sys.exit("usage: tree_heap_trace.py <heap_trace.log>")
 
 # Regex
 # ------------------------------------------------------------------------
-# Extrace frames from MALLOC, CALLOC … banners, keeping full tail
-OP_HDR = re.compile(r'^========= \[([A-Z]+)\]')            
-FRAME  = re.compile(r'^#\d+\s+\S+\s+in\s+(.*)$')           
+# - Extract frames from MALLOC, CALLOC … banners, keeping full tail
+OP_HDR = re.compile(r'^========= \[([A-Z]+)\]')
+# - Capture up to the first " ("  or the end of line, discarding args
+FRAME  = re.compile(r'^#\d+\s+\S+\s+in\s+([^( \t]+)')
 
 # Parse log
 # ------------------------------------------------------------------------
@@ -80,18 +81,18 @@ def print_tree(node, indent=''):
 
 # Build tree
 # ------------------------------------------------------------------------
-trees = collections.defaultdict(lambda: Node('ROOT'))
+roots = collections.defaultdict(lambda: Node('ROOT'))
 
 with open(LOG) as fp:
-    for op, frames in events(fp):
-        if not frames:
-            continue
-        add_stack(trees[op], reversed(frames))   # root-first order
+    for op, frames in events(fp):             # reuse the events() helper
+        if frames:
+            add_stack(roots[op], reversed(frames))
 
 # Output
 # ------------------------------------------------------------------------
-for op in sorted(trees):
-    root = trees[op]
+for op in sorted(roots):
+    root = roots[op]
     print('\n{}   ({} calls)'.format(op, root.count))
     print_tree(root)
+
 
