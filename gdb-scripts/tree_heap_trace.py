@@ -84,9 +84,20 @@ def print_tree(node, indent=''):
 roots = collections.defaultdict(lambda: Node('ROOT'))
 
 with open(LOG) as fp:
-    for op, frames in events(fp):             # reuse the events() helper
-        if frames:
-            add_stack(roots[op], reversed(frames))
+    for op, frames in events(fp):
+        if not frames:
+            continue
+
+        root_first = list(reversed(frames))      # #N … #0  →  root→leaf
+
+        # - Optional: drop everything above main() 
+        try:
+            idx = root_first.index('main')
+            root_first = root_first[idx:]        # start at main
+        except ValueError:
+            pass                                 # stacks that run before main
+
+        add_stack(roots[op], trimmed)            # root→leaf
 
 # Output
 # ------------------------------------------------------------------------
