@@ -47,8 +47,9 @@ def leak(addr: int) -> None:
     frame = inspect.currentframe().f_back
     variables = {k: v for k, v in frame.f_locals.items() if v is addr}
     desc = next(iter(variables.keys()), "unknown")
-    c_addr = f"\033[1;33m{addr:#x}\033[0m"
-    success(f"Leak {desc:<16} addr: {c_addr}")
+    c_desc = f"\033[1;31m{desc:<16}\033[0m"     
+    c_addr = f"\033[1;33m{addr:#x}\033[0m"  
+    success(f"Leak {c_desc:<16} addr: {c_addr}")
 
 def itoa(a: int) -> bytes:
     return str(a).encode()
