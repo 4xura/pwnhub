@@ -1,29 +1,3 @@
-# === Build Artifacts ===
-exploit        # compiled C binary
-*.o            # object files
-
-# === Python ===
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-
-# === Scripts ===
-scripts/*.log
-scripts/*.out
-scripts/*~
-
-# === Editor/IDE Files ===
-*~
-*.swp
-*.swo
+.gdb_history
 *.bak
-*.tmp
-*.log
-
-# === OS Noise ===
-.DS_Store
-Thumbs.db
-
-# === Misc ===
-tags
+__pycache__
