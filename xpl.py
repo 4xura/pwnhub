@@ -166,7 +166,7 @@ if __name__ == '__main__':
         if LIBC_PATH:
             libc = ELF(LIBC_PATH)
         remote_ip, remote_port = sys.argv[1], int(sys.argv[2])
-        io = remote(remote_ip_addr, remote_port)
+        io = remote(remote_ip, remote_port)
         mode["remote"] = True
 
     elif len(sys.argv) == 2 and ':' in sys.argv[1]:
