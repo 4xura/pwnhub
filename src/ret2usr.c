@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include "ret2user.h"
+#include "ret2usr.h"
 #include "utils.h"
 #include "globals.h"
 
@@ -41,7 +41,7 @@ iretq_user_ctx_t save_iretq_user_ctx(void (*rip_func)(void))
 
 /* Use a global fake stack frame for iretq call */
 void __attribute__((noreturn))
-_glb_ret2user_iretq(void)
+_glb_ret2usr_iretq(void)
 {
     __asm__ __volatile__ (
         ".intel_syntax noprefix;"
@@ -56,7 +56,7 @@ _glb_ret2user_iretq(void)
 
 /* Passing inline iretq ctx as arguments as a flex */
 void __attribute__((noreturn))
-__ret2user_iretq(iretq_user_ctx_t ctx) {
+__ret2usr_iretq(iretq_user_ctx_t ctx) {
     __asm__ __volatile__ (
         ".intel_syntax noprefix;"
         "swapgs;"

@@ -1,5 +1,5 @@
-#ifndef RET2USER_H
-#define RET2USER_H
+#ifndef RET2USR_H
+#define RET2USR_H
 
 #include <stdint.h>  
 
@@ -26,7 +26,7 @@
  *  +-------------------------+
  *
  * PATCH: 
- *      A direct ret2user can’t be used since Linux 4.15
+ *      A direct ret2usr can’t be used since Linux 4.15
  *      All userspace memory in kernel will be mapped as non-executable (KPTI)
  *      We will need to bypass KPTI then continue this attack
  * */
@@ -63,18 +63,18 @@ void stash_iretq_frame(uintptr_t frame[5], iretq_user_ctx_t ctx);
  * */
 
 /* Pass an iretq user ctx struct as an variable for the inline asm payload */
-void __attribute__((noreturn)) __ret2user_iretq(iretq_user_ctx_t ctx);
+void __attribute__((noreturn)) __ret2usr_iretq(iretq_user_ctx_t ctx);
 
 /* use a global stackframe */
-void __attribute__((noreturn)) _glb_ret2user_iretq(void); 
+void __attribute__((noreturn)) _glb_ret2usr_iretq(void); 
 
 /* Wrapper */
-void __attribute__((noreturn)) ret2user_iretq(void);
+void __attribute__((noreturn)) ret2usr_iretq(void);
 
 
 /* Helper: Dump iretq user context like a virtual stack layout */
 void dump_iretq_user_ctx(iretq_user_ctx_t *ctx);
 
 
-#endif  // RET2USER_H
+#endif  // RET2USR_H
 

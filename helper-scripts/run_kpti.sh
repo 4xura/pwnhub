@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# run_kpti.sh - Launch QEMU for ret2user-style kernel exploits
+# run_kpti.sh - Launch QEMU for ret2usr-style kernel exploits
 #
 # Author: Axura
 # Website: https://4xura.com

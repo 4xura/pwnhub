@@ -11,13 +11,13 @@ project-root/
 ├── include/                // Shared headers
 │   ├── utils.h             // Common macros & helpers (e.g., DIE(), hexdump(), etc.)
 │   ├── stack_overflow.h    // Cookie leaker, overflow primitives
-│   ├── ret2user.h          // IRETQ trampoline, user context manager
+│   ├── ret2usr.h          // IRETQ trampoline, user context manager
 │   └── ...
 │ 
 ├── src/                // Modular exploit components (optional)
 │   ├── utils.c
 │   ├── stack_overflow.c
-│   ├── ret2user.c
+│   ├── ret2usr.c
 │   └── ... 
 │ 
 ├── obj/                // Auto-generated object files
@@ -31,7 +31,7 @@ project-root/
 │   ├── extract_initramfs.sh    // Unpack initramfs for modification or inspection
 │   ├── pack_initramfs.sh       // Compile exploit binary and repackage it into initramfs.cpio.gz
 │   ├── run_serial.sh           // Launch QEMU with serial terminal
-│   ├── run_ret2user.sh         // Boot QEMU for ret2user-style kernel exploit testing\
+│   ├── run_ret2usr.sh         // Boot QEMU for ret2usr-style kernel exploit testing\
 │   └── patch_alarm.py          // Patch alarm syscall
 │
 ├── xpl                 // Final compiled exploit binary
@@ -74,6 +74,6 @@ The `scripts/` folder contains utility scripts used to assist with compiling, ex
 - **`extract_initramfs.sh`** – Unpacks a gzipped `initramfs.cpio.gz` for manual modifications.
 - **`pack_initramfs.sh`** – Compiles exploit (statically), moves it into the extracted `initramfs/`, and repacks it into `initramfs.cpio.gz`.
 - **`run_serial.sh`** – Starts a QEMU guest with kernel serial output (good for debugging with `-nographic`).
-- **`run_ret2user.sh`** – Starts a preconfigured QEMU instance for local kernel ret2usr-style exploitation.
+- **`run_ret2usr.sh`** – Starts a preconfigured QEMU instance for local kernel ret2usr-style exploitation.
 - **`patch_alarm.py`** – Custom patch ELF script to bypass the annoying alarm syscall for debugging.
 

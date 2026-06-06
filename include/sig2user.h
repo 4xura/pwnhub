@@ -4,7 +4,7 @@
 #include <signal.h>
 
 /*
- * ============= SIGSERGV Handler ret2user =============
+ * ============= SIGSERGV Handler ret2usr =============
  * SIGSEGV handler can trick to bypass KPTI/NX after failed iretq
  * 
  * If ROP fails and causes a userland segfault, we register a

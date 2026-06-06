@@ -2,7 +2,7 @@
 #define GLOBALS_H
 
 #include "kcred.h"
-#include "ret2user.h"
+#include "ret2usr.h"
 #include <stdint.h>
 
 #ifdef DEFINE_GLOBALS

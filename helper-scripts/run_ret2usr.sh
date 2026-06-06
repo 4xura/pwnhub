@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# run_ret2user.sh - Launch QEMU for ret2user-style kernel exploits
+# run_ret2usr.sh - Launch QEMU for ret2usr-style kernel exploits
 #
 # Author: Axura
 # Website: https://4xura.com
@@ -10,7 +10,7 @@
 #   - Ideal for ret2usr payloads that execute shellcode in user space
 #
 # Usage:
-#   ./run_ret2user.sh [options]
+#   ./run_ret2usr.sh [options]
 #
 # Options:
 #   --kernel PATH       Kernel image (default: ./vmlinuz)
@@ -18,7 +18,7 @@
 #   --mem SIZE          Memory size (default: 256M)
 #   --cpu STRING        QEMU CPU model (default: qemu64,smep=off,smap=off)
 #   --hdb FILE          Attach file as second hard disk (default: flag.txt)
-#   --append ARGS       Kernel cmdline (default: ret2user-friendly options)
+#   --append ARGS       Kernel cmdline (default: ret2usr-friendly options)
 #   -h, --help          Show this help message
 # ------------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ done
 [[ -f "$INITRD" ]] || { echo "[!] Initramfs not found: $INITRD"; exit 1; }
 [[ -f "$HDB" ]]    || { echo "[!] hdb file not found: $HDB"; exit 1; }
 
-echo "[*] Launching QEMU for ret2user..."
+echo "[*] Launching QEMU for ret2usr..."
 echo "[*] Kernel : $KERNEL"
 echo "[*] Initrd : $INITRD"
 echo "[*] Memory : $MEM"

